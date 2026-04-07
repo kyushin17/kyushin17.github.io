@@ -1,0 +1,120 @@
+import { useState } from 'react';
+import { PrescriptionCard } from './components/PrescriptionCard';
+import { IndexLogo } from './components/IndexLogo';
+
+const prescriptions = [
+  // Level 1 - Simple
+  [
+    "Do 10 push-ups. Now.",
+    "Drink a glass of water.",
+    "Stand up and stretch for 2 minutes.",
+    "Take 5 deep breaths.",
+    "Walk around your room 3 times.",
+  ],
+  // Level 2 - Moderate
+  [
+    "Run in place for 5 minutes without stopping.",
+    "Do 30 jumping jacks immediately.",
+    "Hold a plank position for 90 seconds.",
+    "Sing your favorite song at full volume.",
+    "Do 20 burpees right now.",
+  ],
+  // Level 3 - Intense
+  [
+    "Sprint outside for 10 minutes straight.",
+    "Do 50 push-ups. No breaks allowed.",
+    "Scream as loud as you can for 10 seconds.",
+    "Run up and down stairs 20 times.",
+    "Dance wildly for 15 minutes non-stop.",
+  ],
+  // Level 4 - Extreme
+  [
+    "Drop and give me 100 push-ups. I don't care how long it takes.",
+    "Run 5 kilometers. Track your time.",
+    "Do a full workout routine: 50 push-ups, 50 sit-ups, 50 squats, 5-minute plank.",
+    "Go outside and run until you can't run anymore.",
+    "Complete 100 burpees. Your body will thank me later.",
+  ],
+  // Level 5 - Brutal
+  [
+    "Run 10 kilometers before sunset. No excuses.",
+    "Complete 200 push-ups, 200 sit-ups, 200 squats today. All of them.",
+    "Exercise for 2 hours straight. Mix cardio and strength training.",
+    "Do a full marathon. Yes, 42 kilometers. Start running.",
+    "Complete 500 burpees before you sleep tonight. Track every single one.",
+  ]
+];
+
+export default function App() {
+  const [currentPrescription, setCurrentPrescription] = useState<string>("Receive Prescription");
+  const [showPrescription, setShowPrescription] = useState(false);
+  const [timeRemaining, setTimeRemaining] = useState<string>("");
+
+  const generatePrescription = () => {
+    const now = Date.now();
+    const lastGenerated = localStorage.getItem('lastPrescriptionTime');
+    
+    if (lastGenerated) {
+      const timePassed = now - parseInt(lastGenerated);
+      const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
+      
+      if (timePassed < oneHour) {
+        const remainingMs = oneHour - timePassed;
+        const minutes = Math.floor(remainingMs / 60000);
+        const seconds = Math.floor((remainingMs % 60000) / 1000);
+        setTimeRemaining(`Please wait ${minutes}m ${seconds}s before receiving another prescription`);
+        return;
+      }
+    }
+    
+    // Get current level and increment it
+    const currentLevel = parseInt(localStorage.getItem('prescriptionLevel') || '0');
+    const nextLevel = Math.min(currentLevel, prescriptions.length - 1);
+    
+    const randomIndex = Math.floor(Math.random() * prescriptions[nextLevel].length);
+    setCurrentPrescription(prescriptions[nextLevel][randomIndex]);
+    setShowPrescription(true);
+    setTimeRemaining("");
+    
+    // Store the timestamp and increment level for next time
+    localStorage.setItem('lastPrescriptionTime', now.toString());
+    localStorage.setItem('prescriptionLevel', (currentLevel + 1).toString());
+  };
+
+  return (
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
+      <div className="max-w-2xl w-full space-y-8">
+        {/* Header */}
+        <div className="text-center space-y-4">
+          <IndexLogo />
+        </div>
+
+        {/* Generate Button */}
+        <div className="flex justify-center">
+          <button
+            onClick={generatePrescription}
+            className="bg-black text-cyan-400 font-bold py-4 px-8 rounded-lg shadow-lg transform transition hover:scale-105 active:scale-95 uppercase tracking-wider max-w-3xl"
+            style={{
+              fontFamily: 'Cinzel, serif',
+              textShadow: '0 0 10px rgba(34, 211, 238, 0.8), 0 0 20px rgba(34, 211, 238, 0.6), 0 0 30px rgba(34, 211, 238, 0.4)'
+            }}
+          >
+            {currentPrescription}
+          </button>
+        </div>
+
+        {/* Time Remaining Message */}
+        {timeRemaining && (
+          <div className="text-center text-red-400 text-sm">
+            {timeRemaining}
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="mt-12 text-center text-sm text-gray-400">
+        <p>By order of the Index • Limbus Company</p>
+      </div>
+    </div>
+  );
+}
